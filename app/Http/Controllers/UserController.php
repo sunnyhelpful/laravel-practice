@@ -38,7 +38,7 @@ class UserController extends Controller
             })
             ->get(); */
 
-            // $users = User::whereIn('name', ['john', 'doe'])->get();
+            /* $users = User::whereIn('name', ['john', 'doe'])->get(); */
 
             // $users = User::where('name', 'like', '%' . 'john' . '%')->orWhere('name', 'like', '%' .'doe'. '%')->get();
 
@@ -48,14 +48,77 @@ class UserController extends Controller
             $getTime = $currentDate->toTimeString();
             // $users = User::whereMonth('dob', $getMonth)->whereDay('dob', $getDay)->get();
 
-            /* get Expenses Data greater than 50 */
+            /* get Expenses Data with relationship 50 */
             // $users = User::with('orders')->orderBy('id', 'desc')->get();
 
+            /* get user data with Expenses Data greater than 50 */
             /* $users = User::with(['orders' => function ($query) {
                 $query->where('expenses', '>', 50);
             }])->get(); */
 
-            // \Log::info($users);
+            /* Get Those User Data whose expenses is more than 50 but without Expensions */
+            /* $users = User::whereHas('orders', function($query){
+                $query->where('expenses','>', 50);
+            })->get(); */
+
+            /* Now Practice Join With Two Tables*/
+            /* $users = User::join('orders', 'orders.user_id', '=', 'users.id')
+            ->select('users.*', 'orders.*')->orderBy('users.id', 'desc')
+            ->get(); */
+
+            /* $users = User::leftjoin('orders', 'orders.user_id','=', 'users.id')->select('users.*', 'orders.*')->get(); */
+            /* $users = User::rightjoin('orders', 'orders.user_id','=', 'users.id')->select('users.*', 'orders.*')->get(); */
+            /* $users = User::crossjoin('orders', 'orders.user_id','=', 'users.id')->select('users.*', 'orders.*')->get(); */
+
+            /* $users = User::with('orders')->orderBy('id', 'desc')->get()->map( function($query){
+                return $query;
+            }); */
+
+
+            /* 
+            Sample For filter
+                return Admin::where(function($q) use($type, $filters){
+                        $query = $q;
+
+                        if(!empty($filters)) {
+
+                            if($filters['status'] !== null)
+                            {
+                                $query = $query->where('is_active', $filters['status']);
+                            }
+
+                            if(
+                                (isset($filters['fields']) && $filters['fields'] != null)
+                                && (isset($filters['search']) && $filters['search'] != null)
+                            ) {
+                                $search = $filters['search'];
+                                $query = $query->where($filters['fields'], 'LIKE', "%$search%");
+                            }
+
+                        }
+
+                        $query = $query->where('admin_type', $type);
+
+                        return $query;
+
+                    })->with([
+                        'bankName',
+                        'distributor',
+                        'subHeadQuaters',
+                        'allStores',
+                        'allDistributor',
+                        'allStoresInDistributor',
+                    ])
+                    ->withCount([
+                        'allStores',
+                        'allDistributor',
+                        'allStoresInDistributor',
+                    ])
+                    ->paginate(10);
+                }
+            */
+            $users = User::with('orders')->orderBy('id', 'desc')->withCount('orders')->paginate(2);
+
             return response()->json(['status'=> 'success', 'data'=> $users]);
         } catch (\Throwable $e) {
             \Log::error($e->getMessage().' '.$e->getFile().' '.$e->getLine());
